@@ -1,6 +1,6 @@
-# InferGo
+# infergo
 
-InferGo is a lightweight, easy-to-use library for running machine learning models in Go.
+infergo is a lightweight, easy-to-use library for running machine learning models in Go.
 
 ## Installation
 

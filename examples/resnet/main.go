@@ -11,7 +11,7 @@ import (
 	"os"
 
 	"github.com/joeychilson/infergo/models/resnet"
-	"github.com/joeychilson/infergo/pkg/labels" // Make sure this import exists
+	"github.com/joeychilson/infergo/pkg/labels"
 	"github.com/joeychilson/infergo/pkg/onnx"
 	"github.com/joeychilson/infergo/pkg/postprocess"
 	"github.com/joeychilson/infergo/pkg/preprocess"
