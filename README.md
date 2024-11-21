@@ -14,5 +14,6 @@ Check out the [examples](examples) directory for examples.
 
 ## Available Models
 
+- BERT - Text classification
 - ResNet - Image classification
 - YOLO - Object detection
