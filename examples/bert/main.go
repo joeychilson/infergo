@@ -18,7 +18,7 @@ func main() {
 	}
 	defer runtime.Close()
 
-	tok, err := tokenizer.New(".cache/tokenizer.json")
+	tok, err := tokenizer.NewBERTTokenizer()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,7 +29,7 @@ func main() {
 	}
 	defer model.Close()
 
-	text := "Paris is the [MASK] of France."
+	text := "[mask] is the capital of France."
 
 	tokenOutput, err := tok.Encode(text, 512)
 	if err != nil {
@@ -50,7 +50,7 @@ func main() {
 	maskLogits := output.Logits[maskPosition*vocabSize : (maskPosition+1)*vocabSize]
 
 	classifictions, err := postprocess.ProcessClassification(maskLogits, postprocess.ClassificationOptions{
-		Labels:  tok.IDToToken,
+		Labels:  tok.Labels(),
 		TopK:    5,
 		Softmax: true,
 	})
