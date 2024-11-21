@@ -29,7 +29,7 @@ func main() {
 	}
 	defer model.Close()
 
-	text := "[mask] is the capital of France."
+	text := "The [MASK] is a large animal that lives in the [MASK]."
 
 	tokenOutput, err := tok.Encode(text, 512)
 	if err != nil {
@@ -44,22 +44,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	maskPosition := tok.MaskPosition(tokenOutput.Tokens)
-	vocabSize := tok.VocabSize()
-
-	maskLogits := output.Logits[maskPosition*vocabSize : (maskPosition+1)*vocabSize]
-
-	classifictions, err := postprocess.ProcessClassification(maskLogits, postprocess.ClassificationOptions{
-		Labels:  tok.Labels(),
-		TopK:    5,
-		Softmax: true,
-	})
+	maskLogits, err := tok.MaskLogits(tokenOutput.Tokens, output.Logits)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("\nTop 5 predictions:")
-	for _, c := range classifictions {
-		fmt.Printf("%s: %.2f\n", c.Label, c.Confidence*100)
+	for _, ml := range maskLogits {
+		classifictions, err := postprocess.ProcessClassification(ml.Logits, postprocess.ClassificationOptions{
+			Labels:  tok.Labels(),
+			TopK:    5,
+			Softmax: true,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println("\nTop 5 predictions for mask at position", ml.Position)
+		for _, c := range classifictions {
+			fmt.Printf("%s: %.2f\n", c.Label, c.Confidence*100)
+		}
 	}
 }

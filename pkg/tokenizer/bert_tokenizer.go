@@ -98,24 +98,42 @@ func (t *BERTTokenizer) Encode(text string, maxLength int) (*TokenizerOutput, er
 	}, nil
 }
 
-// MaskPosition returns the position of the first [MASK] token in the sequence
-func (t *BERTTokenizer) MaskPosition(tokens []string) int {
-	for i, token := range tokens {
+// MaskLogits represents the logits for masked tokens
+type MaskLogits struct {
+	Position int       // Position of the mask token
+	Logits   []float32 // Logits for the mask token
+}
+
+// MaskLogits extracts logits for all mask tokens in the sequence
+func (t *BERTTokenizer) MaskLogits(tokens []string, logits []float32) ([]MaskLogits, error) {
+	if len(logits)%len(tokens) != 0 {
+		return nil, fmt.Errorf("logits length (%d) is not a multiple of tokens length (%d)", len(logits), len(tokens))
+	}
+
+	vocabSize := len(t.vocab)
+
+	var maskLogits []MaskLogits
+	for pos, token := range tokens {
 		if token == t.specialTokens.MASK {
-			return i
+			start := pos * vocabSize
+			end := start + vocabSize
+			if end > len(logits) {
+				return nil, fmt.Errorf("logits array too short for mask at position %d", pos)
+			}
+
+			maskLogits = append(maskLogits, MaskLogits{
+				Position: pos,
+				Logits:   logits[start:end],
+			})
 		}
 	}
-	return -1
+
+	return maskLogits, nil
 }
 
 // Labels returns the labels for the vocabulary
 func (t *BERTTokenizer) Labels() map[int]string {
 	return t.labels
-}
-
-// VocabSize returns the size of the vocabulary
-func (t *BERTTokenizer) VocabSize() int {
-	return len(t.vocab)
 }
 
 func loadVocabFromEmbed() (map[string]int, error) {
